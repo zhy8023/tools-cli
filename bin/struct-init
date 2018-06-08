@@ -52,44 +52,58 @@ function run () {
 	console.log(chalk.yellow(`使用模板${template}创建项目`));
 	const spinner = ora('正在下载模板');
 	spinner.start();
-	exec(`npm i ${tplJson[template].npm}`, (err, data) => {
-		spinner.stop();
-		process.on('exit', () => {
-			rm(`${process.cwd()}/node_modules`)
-		})
-		if (err) {
-			console.log(chalk.red('模板下载失败 ', err.message));
-		}
-		const tplPath = `${process.cwd()}/node_modules/${tplJson[template].npm}`;
-		const opts = require(`${tplPath}/meta`);
-		const projectPath = `${process.cwd()}/${dir}`;
-		Metalsmith(`${tplPath}/template`)
-			.source('.')
-			.destination(`${projectPath}`)
-			.build(function(err) {
-				if (err) {
-					console.log(chalk.red('项目生成失败', err));
-				}
-				console.log(chalk.yellow(' \n 项目已创建'));
-				// if (opts.autoScript) {
-				// 	prompt([
-				// 		{
-				// 			type: 'comfirm',
-				// 			message: `是否运行后置脚本`,
-				// 			name: 'ok'
-				// 		}
-				// 	]).then((data) => {
-				// 		if (data.ok) {
-				// 			console.log(chalk.yellow(opts.completeMessage));
-				// 			console.log(111, `cd test && npm run dev`);
-				// 			try { 
-				// 				exec(`cd test && npm run dev`);
-				// 			} catch (e) {
-				// 				console.log(chalk.red('脚本出错'));
-				// 			}
-				// 		}
- 			// 		});
-				// }
+	if (tplJson[template].npm) {
+		exec(`npm i ${tplJson[template].npm}`, (err, data) => {
+			spinner.stop();
+			process.on('exit', () => {
+				rm(`${process.cwd()}/node_modules`)
 			})
-	});
+			if (err) {
+				console.log(chalk.red('模板下载失败 ', err.message));
+			}
+			const tplPath = `${process.cwd()}/node_modules/${tplJson[template].npm}`;
+			const opts = require(`${tplPath}/meta`);
+			const projectPath = `${process.cwd()}/${dir}`;
+			Metalsmith(`${tplPath}/template`)
+				.source('.')
+				.destination(`${projectPath}`)
+				.build(function(err) {
+					if (err) {
+						console.log(chalk.red('项目生成失败', err));
+					}
+					console.log(chalk.yellow(' \n 项目已创建'));
+					// if (opts.autoScript) {
+					// 	prompt([
+					// 		{
+					// 			type: 'comfirm',
+					// 			message: `是否运行后置脚本`,
+					// 			name: 'ok'
+					// 		}
+					// 	]).then((data) => {
+					// 		if (data.ok) {
+					// 			console.log(chalk.yellow(opts.completeMessage));
+					// 			console.log(111, `cd test && npm run dev`);
+					// 			try { 
+					// 				exec(`cd test && npm run dev`);
+					// 			} catch (e) {
+					// 				console.log(chalk.red('脚本出错'));
+					// 			}
+					// 		}
+				 // 		});
+					// }
+				})
+		});
+	} else if (tplJson[template].git) {
+		exec(`git clone ${tplJson[template].git}`, (error, stdout, stderr) => {
+			if (error) {
+				console.log(chalk.red('模板下载失败 ', error.message));
+				process.exit()
+			}
+			console.log('pull我们的项目已经成功了')
+			process.exit()
+		})
+	} else {
+		console.log('项目生成失败');
+	}
+	
 }	
